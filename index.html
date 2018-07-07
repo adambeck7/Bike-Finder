@@ -121,7 +121,7 @@
                 <td>Image:</td>
                 <td>
                     <div id='filesubmit'>
-                        <input id="add-user" type="file" class='file-select' name="pic" accept="image/*">
+                        <input id="image-input" type="file" class='file-select' name="pic" accept="image/*">
                         <!-- <input type="submit"> -->
                         </form>
                 </td>
@@ -140,16 +140,41 @@
             var marker;
             var infowindow;
             var messagewindow;
+            // var data = {
+            //     sender: null,
+            //     timestamp: null,
+            //     lat: null,
+            //     lng: null
+            // };
+            // var firebase = new Firebase("https://bike-finder-project.firebaseio.com");
+
 
             function initMap() {
                 var denver = {
                     lat: 39.680429,
-                    lng: -104.965109
+                    lng: -104.965109,
+                    styles: [{
+                        featureType: 'poi',
+                        stylers: [{
+                            visibility: 'off'
+                        }] // Turn off points of interest.
+                    }, {
+                        featureType: 'transit.station',
+                        stylers: [{
+                            visibility: 'off'
+                        }] // Turn off bus stations, train stations, etc.
+                    }],
+                    disableDoubleClickZoom: true
+
                 };
                 map = new google.maps.Map(document.getElementById('map'), {
                     center: denver,
                     zoom: 13
                 });
+                // Create the DIV to hold the control and call the makeInfoBox() constructor
+                // passing in this DIV.
+
+
 
                 infowindow = new google.maps.InfoWindow({
                     content: document.getElementById('form')
@@ -182,10 +207,17 @@
                 size = $("#size-input").val().trim();
                 license = $("#license-input").val().trim();
                 serial = $("#serial-input").val().trim();
+                image = '';
+                database.ref().on("value", function (snapshot) {
+                    snapshot.forEach(function (childSnapshot) {
+                        var childData = childSnapshot.val();
+                        var id = childData.id;
+                        console.log(childData.id);
+                    });
+                });
 
                 // Code for handling the push
                 database.ref().push({
-
                     make: make,
                     model: model,
                     color: color,
@@ -194,7 +226,9 @@
                     license: license,
                     serial: serial,
                     status: status,
+                    image: image,
                     dateAdded: firebase.database.ServerValue.TIMESTAMP
+
                 });
             }
 
@@ -213,6 +247,29 @@
                 request.open('GET', url, true);
                 request.send(null);
             }
+
+
+
+
+            // function loadPointsFromFirebase(map) { // pass the initialised map to the function
+            //     var marker = {};
+            //     // var db = firebase.database();
+            //     database.ref('clicks').ones('value', points => {
+            //         points.forEach(point => {
+            //             marker = new google.maps.Marker({
+            //                 map: map,
+            //                 position: {
+            //                     lat: point.val().lat,
+            //                     lng: point.val().lng
+            //                 }
+            //             })
+            //             marker.setMap(map) // Set market on the map 
+            //         })
+            //     })
+
+
+
+            // }
 
             function doNothing() {}
 
@@ -275,6 +332,13 @@
                 license = $("#license-input").val().trim();
                 serial = $("#serial-input").val().trim();
                 status = $("#status-input").val().trim();
+                // map.addListener('click', function (e) {
+                //     data.lat = e.latLng.lat();
+                //     data.lng = e.latLng.lng();
+                //     addToFirebase(data);
+                //     console.log(e.latLng.lat());
+                // });
+
 
                 // Code for handling the push
                 database.ref().push({
@@ -287,7 +351,8 @@
                     license: license,
                     serial: serial,
                     status: status,
-                    dateAdded: firebase.database.ServerValue.TIMESTAMP
+                    dateAdded: firebase.database.ServerValue.TIMESTAMP,
+
                 });
 
             });

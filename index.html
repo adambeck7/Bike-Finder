@@ -7,6 +7,9 @@
     <meta charset="utf-8">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
         crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -28,7 +31,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Navbar</a>
+        <a class="navbar-brand" href="#">Bike Finder</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
             aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -37,14 +40,14 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Home
+                    <a class="nav-link" href="#">Lost/Stolen Bike?
                         <span class="sr-only">(current)</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
+                    <a class="nav-link" href="#">Found a Bike?</a>
                 </li>
-                <li class="nav-item dropdown">
+                <!-- <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         Dropdown
@@ -58,7 +61,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link disabled" href="#">Disabled</a>
-                </li>
+                </li> -->
             </ul>
             <form class="form-inline my-2 my-lg-0">
                 <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
@@ -71,110 +74,229 @@
     <div id="form">
         <table>
             <tr>
-                <td>Name:</td>
+                <td>Status:</td>
                 <td>
-                    <input type='text' id='name' /> </td>
+                    <fieldset id="status-input">
+                        <input type="radio" value="" name="status-input">Lost/Stolen
+                        <input type="radio" value="1" name="status-input">Found
+                    </fieldset>
+                </td>
             </tr>
             <tr>
-                <td>Address:</td>
+                <td>Make:</td>
                 <td>
-                    <input type='text' id='address' /> </td>
+                    <input type='text' id='make-input' /> </td>
             </tr>
             <tr>
-                <td>Type:</td>
+                <td>Model:</td>
                 <td>
-                    <select id='type'> +
-                        <option value='bar' SELECTED>bar</option>
-                        <option value='restaurant'>restaurant</option>
-                    </select>
+                    <input type='text' id='model-input' /> </td>
+            </tr>
+            <tr>
+                <td>Color:</td>
+                <td>
+                    <input type='text' id='color-input' /> </td>
+            </tr>
+            <tr>
+                <td>Age:</td>
+                <td>
+                    <input type='text' id='age-input' /> </td>
+            </tr>
+            <tr>
+                <td>Size:</td>
+                <td>
+                    <input type='text' id='size-input' /> </td>
+            </tr>
+            <tr>
+                <td>License:</td>
+                <td>
+                    <input type='text' id='license-input' /> </td>
+            </tr>
+            <tr>
+                <td>Serial Number:</td>
+                <td>
+                    <input type='text' id='serial-input' /> </td>
+            </tr>
+            <tr>
+                <td>Image:</td>
+                <td>
+                    <div id='filesubmit'>
+                        <input id="add-user" type="file" class='file-select' name="pic" accept="image/*">
+                        <!-- <input type="submit"> -->
+                        </form>
                 </td>
             </tr>
             <tr>
                 <td></td>
                 <td>
-                    <input type='button' value='Save' onclick='saveData()' />
+                    <input type='button' class='file-submit' value='Submit' onclick="saveData()" />
                 </td>
             </tr>
         </table>
-    </div>
-    <div id="message">Location saved</div>
-    <script>
-        var map;
-        var marker;
-        var infowindow;
-        var messagewindow;
+        </div>
+        <div id="message">Location saved</div>
+        <script>
+            var map;
+            var marker;
+            var infowindow;
+            var messagewindow;
 
-        function initMap() {
-            var california = {
-                lat: 39.680429,
-                lng: -104.965109
-            };
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: california,
-                zoom: 13
-            });
-
-            infowindow = new google.maps.InfoWindow({
-                content: document.getElementById('form')
-            });
-
-            messagewindow = new google.maps.InfoWindow({
-                content: document.getElementById('message')
-            });
-
-            google.maps.event.addListener(map, 'click', function (event) {
-                marker = new google.maps.Marker({
-                    position: event.latLng,
-                    map: map
+            function initMap() {
+                var denver = {
+                    lat: 39.680429,
+                    lng: -104.965109
+                };
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: denver,
+                    zoom: 13
                 });
 
-
-                google.maps.event.addListener(marker, 'click', function () {
-                    infowindow.open(map, marker);
+                infowindow = new google.maps.InfoWindow({
+                    content: document.getElementById('form')
                 });
-            });
-        }
 
-        function saveData() {
-            var name = escape(document.getElementById('name').value);
-            var address = escape(document.getElementById('address').value);
-            var type = document.getElementById('type').value;
-            var latlng = marker.getPosition();
-            var url = 'phpsqlinfo_addrow.php?name=' + name + '&address=' + address +
-                '&type=' + type + '&lat=' + latlng.lat() + '&lng=' + latlng.lng();
+                messagewindow = new google.maps.InfoWindow({
+                    content: document.getElementById('message')
+                });
 
-            downloadUrl(url, function (data, responseCode) {
+                google.maps.event.addListener(map, 'click', function (event) {
+                    marker = new google.maps.Marker({
+                        position: event.latLng,
+                        map: map
+                    });
 
-                if (responseCode == 200 && data.length <= 1) {
-                    infowindow.close();
-                    messagewindow.open(map, marker);
-                }
-            });
-        }
 
-        function downloadUrl(url, callback) {
-            var request = window.ActiveXObject ?
-                new ActiveXObject('Microsoft.XMLHTTP') :
-                new XMLHttpRequest;
+                    google.maps.event.addListener(marker, 'click', function () {
+                        infowindow.open(map, marker);
+                    });
+                });
+            }
 
-            request.onreadystatechange = function () {
-                if (request.readyState == 4) {
-                    request.onreadystatechange = doNothing;
-                    callback(request.responseText, request.status);
-                }
+            function saveData() {
+                // event.preventDefault();
+                // Grabbed values from text boxes
+                make = $("#make-input").val().trim();
+                model = $("#model-input").val().trim();
+                color = $("#color-input").val().trim();
+                age = $("#age-input").val().trim();
+                size = $("#size-input").val().trim();
+                license = $("#license-input").val().trim();
+                serial = $("#serial-input").val().trim();
+
+                // Code for handling the push
+                database.ref().push({
+
+                    make: make,
+                    model: model,
+                    color: color,
+                    age: age,
+                    size: size,
+                    license: license,
+                    serial: serial,
+                    status: status,
+                    dateAdded: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+
+            function downloadUrl(url, callback) {
+                var request = window.ActiveXObject ?
+                    new ActiveXObject('Microsoft.XMLHTTP') :
+                    new XMLHttpRequest;
+
+                request.onreadystatechange = function () {
+                    if (request.readyState == 4) {
+                        request.onreadystatechange = doNothing;
+                        callback(request.responseText, request.status);
+                    }
+                };
+
+                request.open('GET', url, true);
+                request.send(null);
+            }
+
+            function doNothing() {}
+
+
+            // Initialize Firebase
+            var config = {
+                apiKey: "AIzaSyBdz2Q4if_BfZQP0xRvFsqpyfzUE7TcjKQ",
+                authDomain: "bike-finder-project.firebaseapp.com",
+                databaseURL: "https://bike-finder-project.firebaseio.com",
+                projectId: "bike-finder-project",
+                storageBucket: "bike-finder-project.appspot.com",
+                messagingSenderId: "630877659629"
             };
+            firebase.initializeApp(config);
 
-            request.open('GET', url, true);
-            request.send(null);
-        }
+            // Create a variable to reference the database.
+            var database = firebase.database();
+            //Listen for new added users
+            database.ref().on("child_added", function (snapshot) {
+                var snapValue = snapshot.val();
+                var seconds = snapValue.dateAdded;
+                var d = new Date(0);
+                d.setUTCSeconds(seconds);
+                console.log(d);
+                //                 $("#data-area").append(
+                //                     `
+                // <div class="lost-bike">
+                // <p>${snapValue.make}</p>
+                // <p>${snapValue.model}</p>
+                // <p>${snapValue.color}</p>
+                // <p>${snapValue.age}</p>
+                // <p>${snapValue.size}</p>
+                // <p>${snapValue.license}</p>
+                // <p>${snapValue.serial}</p>
+                // <hr />
+                // </div>
+                // `
+                // )
+            });
+            // Initial Values
+            var make = "";
+            var model = "";
+            var color = "";
+            var age = "";
+            var size = "";
+            var license = "";
+            var serial = "";
+            var status = "";
 
-        function doNothing() {}
-    </script>
-    <!-- function initMap() { map = new google.maps.Map(document.getElementById('map'), { center: { lat: 39.680429, lng: -104.965109
+
+            // Capture Button Click
+            $("#add-user").on("click", function (event) {
+                // event.preventDefault();
+                // Grabbed values from text boxes
+                make = $("#make-input").val().trim();
+                model = $("#model-input").val().trim();
+                color = $("#color-input").val().trim();
+                age = $("#age-input").val().trim();
+                size = $("#size-input").val().trim();
+                license = $("#license-input").val().trim();
+                serial = $("#serial-input").val().trim();
+                status = $("#status-input").val().trim();
+
+                // Code for handling the push
+                database.ref().push({
+
+                    make: make,
+                    model: model,
+                    color: color,
+                    age: age,
+                    size: size,
+                    license: license,
+                    serial: serial,
+                    status: status,
+                    dateAdded: firebase.database.ServerValue.TIMESTAMP
+                });
+
+            });
+        </script>
+        <!-- function initMap() { map = new google.maps.Map(document.getElementById('map'), { center: { lat: 39.680429, lng: -104.965109
     }, zoom: 13 }); } -->
-    </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4d7jTSocgsZ7WSgh2LHVj_D3LPbQ3QVw&callback=initMap" async
-        defer></script>
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4d7jTSocgsZ7WSgh2LHVj_D3LPbQ3QVw&callback=initMap" async
+            defer></script>
 
 </body>
 

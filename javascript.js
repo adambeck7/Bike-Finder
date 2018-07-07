@@ -57,10 +57,11 @@ $("#add-user").on("click", function(event) {
 
     // Code for handling the push
     database.ref().push({
-        age:age,
+        
       make: make,
       model: model,
       color: color,
+      age:age,
       size: size,
       license: license,
       serial: serial,

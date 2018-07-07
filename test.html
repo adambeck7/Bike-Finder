@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+
+        #map {
+            height: 80%;
+        }
+
+        /* Optional: Makes the sample page fill the window. */
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Bike Finder</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Lost/Stolen Bike?
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Found a Bike?</a>
+                </li>
+                <!-- <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        Dropdown
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Disabled</a>
+                </li> -->
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+    <div id="map"></div>
+    <div id="map" height="460px" width="100%"></div>
+    <div id="form">
+        <table>
+            <tr>
+                <td>Status:</td>
+                <td>
+                    <fieldset id="status-input">
+                        <input type="radio" value="" name="status-input">Lost/Stolen
+                        <input type="radio" value="1" name="status-input">Found
+                    </fieldset>
+                </td>
+            </tr>
+            <tr>
+                <td>Make:</td>
+                <td>
+                    <input type='text' id='make-input' /> </td>
+            </tr>
+            <tr>
+                <td>Model:</td>
+                <td>
+                    <input type='text' id='model-input' /> </td>
+            </tr>
+            <tr>
+                <td>Color:</td>
+                <td>
+                    <input type='text' id='color-input' /> </td>
+            </tr>
+            <tr>
+                <td>Age:</td>
+                <td>
+                    <input type='text' id='age-input' /> </td>
+            </tr>
+            <tr>
+                <td>Size:</td>
+                <td>
+                    <input type='text' id='size-input' /> </td>
+            </tr>
+            <tr>
+                <td>License:</td>
+                <td>
+                    <input type='text' id='license-input' /> </td>
+            </tr>
+            <tr>
+                <td>Serial Number:</td>
+                <td>
+                    <input type='text' id='serial-input' /> </td>
+            </tr>
+            <tr>
+                <td>Image:</td>
+                <td>
+                    <div id='filesubmit'>
+                        <input id="add-user" type="file" class='file-select' name="pic" accept="image/*">
+                        <!-- <input type="submit"> -->
+                        </form>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <input type='button' class='file-submit' value='Submit' onclick="saveData()" />
+                </td>
+            </tr>
+        </table>
+        </div>
+        <div id="message">Location saved</div>
+        <script>
+            /**
+             * Reference to Firebase database.
+             * @const
+             */
+            var config = {
+                apiKey: "AIzaSyBdz2Q4if_BfZQP0xRvFsqpyfzUE7TcjKQ",
+                authDomain: "bike-finder-project.firebaseapp.com",
+                databaseURL: "https://bike-finder-project.firebaseio.com",
+                projectId: "bike-finder-project",
+                storageBucket: "bike-finder-project.appspot.com",
+                messagingSenderId: "630877659629"
+            };
+            firebase.initializeApp(config);
+            var database = firebase.database();
+
+            /**
+             * Data object to be written to Firebase.
+             */
+            var data = {
+                sender: null,
+                timestamp: null,
+                lat: null,
+                lng: null
+            };
+
+            function makeInfoBox(controlDiv, map) {
+                // Set CSS for the control border.
+                var controlUI = document.createElement('div');
+                controlUI.style.boxShadow = 'rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px';
+                controlUI.style.backgroundColor = '#fff';
+                controlUI.style.border = '2px solid #fff';
+                controlUI.style.borderRadius = '2px';
+                controlUI.style.marginBottom = '22px';
+                controlUI.style.marginTop = '10px';
+                controlUI.style.textAlign = 'center';
+                controlDiv.appendChild(controlUI);
+
+                // Set CSS for the control interior.
+                var controlText = document.createElement('div');
+                controlText.style.color = 'rgb(25,25,25)';
+                controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+                controlText.style.fontSize = '100%';
+                controlText.style.padding = '6px';
+                controlText.textContent = 'The map shows all clicks made in the last 10 minutes.';
+                controlUI.appendChild(controlText);
+            }
+
+            /**
+             * Starting point for running the program. Authenticates the user.
+             * @param {function()} onAuthSuccess - Called when authentication succeeds.
+             */
+            function initAuthentication(onAuthSuccess) {
+                database.authAnonymously(function (error, authData) {
+                    if (error) {
+                        console.log('Login Failed!', error);
+                    } else {
+                        data.sender = authData.uid;
+                        onAuthSuccess();
+                    }
+                }, {
+                    remember: 'sessionOnly'
+                }); // Users will get a new id for every session.
+            }
+
+            /**
+             * Creates a map object with a click listener and a heatmap.
+             */
+            function initMap() {
+                var map = new google.maps.Map(document.getElementById('map'), {
+                    center: {
+                        lat: 0,
+                        lng: 0
+                    },
+                    zoom: 3,
+                    styles: [{
+                            featureType: 'poi',
+                            stylers: [{
+                                visibility: 'off'
+                            }] // Turn off POI.
+                        },
+                        {
+                            featureType: 'transit.station',
+                            stylers: [{
+                                visibility: 'off'
+                            }] // Turn off bus, train stations etc.
+                        }
+                    ],
+                    disableDoubleClickZoom: true,
+                    streetViewControl: false,
+                });
+
+                // Create the DIV to hold the control and call the makeInfoBox() constructor
+                // passing in this DIV.
+                var infoBoxDiv = document.createElement('div');
+                makeInfoBox(infoBoxDiv, map);
+                map.controls[google.maps.ControlPosition.TOP_CENTER].push(infoBoxDiv);
+
+                // Listen for clicks and add the location of the click to firebase.
+                map.addListener('click', function (e) {
+                    data.lat = e.latLng.lat();
+                    data.lng = e.latLng.lng();
+                    addToFirebase(data);
+                });
+
+                // Create a heatmap.
+                var heatmap = new google.maps.visualization.HeatmapLayer({
+                    data: [],
+                    map: map,
+                    radius: 16
+                });
+
+                initAuthentication(initFirebase.bind(undefined, heatmap));
+            }
+
+            /**
+             * Set up a Firebase with deletion on clicks older than expirySeconds
+             * @param {!google.maps.visualization.HeatmapLayer} heatmap The heatmap to
+             * which points are added from Firebase.
+             */
+            function initFirebase(heatmap) {
+
+                // 10 minutes before current time.
+                var startTime = new Date().getTime() - (60 * 10 * 1000);
+
+                // Reference to the clicks in Firebase.
+                var clicks = database.child('clicks');
+
+                // Listener for when a click is added.
+                clicks.orderByChild('timestamp').startAt(startTime).on('child_added',
+                    function (snapshot) {
+
+                        // Get that click from firebase.
+                        var newPosition = snapshot.val();
+                        var point = new google.maps.LatLng(newPosition.lat, newPosition.lng);
+                        var elapsed = new Date().getTime() - newPosition.timestamp;
+
+                        // Add the point to  the heatmap.
+                        heatmap.getData().push(point);
+
+                        // Requests entries older than expiry time (10 minutes).
+                        var expirySeconds = Math.max(60 * 10 * 1000 - elapsed, 0);
+                        // Set client timeout to remove the point after a certain time.
+                        window.setTimeout(function () {
+                            // Delete the old point from the database.
+                            snapshot.ref().remove();
+                        }, expirySeconds);
+                    }
+                );
+
+                // Remove old data from the heatmap when a point is removed from firebase.
+                clicks.on('child_removed', function (snapshot, prevChildKey) {
+                    var heatmapData = heatmap.getData();
+                    var i = 0;
+                    while (snapshot.val().lat != heatmapData.getAt(i).lat() ||
+                        snapshot.val().lng != heatmapData.getAt(i).lng()) {
+                        i++;
+                    }
+                    heatmapData.removeAt(i);
+                });
+            }
+
+            /**
+             * Updates the last_message/ path with the current timestamp.
+             * @param {function(Date)} addClick After the last message timestamp has been updated,
+             *     this function is called with the current timestamp to add the
+             *     click to the firebase.
+             */
+            function getTimestamp(addClick) {
+                // Reference to location for saving the last click time.
+                var ref = database.child('last_message/' + data.sender);
+
+                ref.onDisconnect().remove(); // Delete reference from firebase on disconnect.
+
+                // Set value to timestamp.
+                ref.set(database.ServerValue.TIMESTAMP, function (err) {
+                    if (err) { // Write to last message was unsuccessful.
+                        console.log(err);
+                    } else { // Write to last message was successful.
+                        ref.once('value', function (snap) {
+                            addClick(snap.val()); // Add click with same timestamp.
+                        }, function (err) {
+                            console.warn(err);
+                        });
+                    }
+                });
+            }
+
+            /**
+             * Adds a click to firebase.
+             * @param {Object} data The data to be added to firebase.
+             *     It contains the lat, lng, sender and timestamp.
+             */
+            function addToFirebase(data) {
+                getTimestamp(function (timestamp) {
+                    // Add the new timestamp to the record data.
+                    data.timestamp = timestamp;
+                    var ref = database.child('clicks').push(data, function (err) {
+                        if (err) { // Data was not written to firebase.
+                            console.warn(err);
+                        }
+                    });
+                });
+            }
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4d7jTSocgsZ7WSgh2LHVj_D3LPbQ3QVw&callback=initMap" async
+            defer></script>
+
+</body>
+
+</html>

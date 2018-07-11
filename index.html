@@ -10,6 +10,10 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
+    <!-- GeoFire -->
+    <script src="https://cdn.firebase.com/libs/geofire/4.1.2/geofire.min.js"></script>
+    <script src="mapsAPI.js"></script>
+    <script src="geofire.js"></script>
     <style>
         /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -98,7 +102,7 @@
                     <input type='text' id='color-input' /> </td>
             </tr>
             <tr>
-                <td>Age:</td>
+                <td>Year:</td>
                 <td>
                     <input type='text' id='age-input' /> </td>
             </tr>
@@ -134,228 +138,32 @@
             </tr>
         </table>
         </div>
-        <div id="message">Location saved</div>
+        <!-- <div id="message">Location saved</div> -->
         <script>
-            var map;
-            var marker;
-            var infowindow;
-            var messagewindow;
-            // var data = {
-            //     sender: null,
-            //     timestamp: null,
-            //     lat: null,
-            //     lng: null
-            // };
-            // var firebase = new Firebase("https://bike-finder-project.firebaseio.com");
+            function handleFileUploadSubmit(e) {
 
+                var uploadTask = storageRef.child(`images/${selectedFile.name}`).put(selectedFile); //create a child directory called images, and place the file inside this directory
 
-            function initMap() {
-                var denver = {
-                    lat: 39.680429,
-                    lng: -104.965109,
-                    styles: [{
-                        featureType: 'poi',
-                        stylers: [{
-                            visibility: 'off'
-                        }] // Turn off points of interest.
-                    }, {
-                        featureType: 'transit.station',
-                        stylers: [{
-                            visibility: 'off'
-                        }] // Turn off bus stations, train stations, etc.
-                    }],
-                    disableDoubleClickZoom: true
-
-                };
-                map = new google.maps.Map(document.getElementById('map'), {
-                    center: denver,
-                    zoom: 13
-                });
-                // Create the DIV to hold the control and call the makeInfoBox() constructor
-                // passing in this DIV.
-
-
-
-                infowindow = new google.maps.InfoWindow({
-                    content: document.getElementById('form')
-                });
-
-                messagewindow = new google.maps.InfoWindow({
-                    content: document.getElementById('message')
-                });
-
-                google.maps.event.addListener(map, 'click', function (event) {
-                    marker = new google.maps.Marker({
-                        position: event.latLng,
-                        map: map
-                    });
-
-
-                    google.maps.event.addListener(marker, 'click', function () {
-                        infowindow.open(map, marker);
-                    });
+                uploadTask.on('state_changed', (snapshot) => {
+                    // Observe state change events such as progress, pause, and resume
+                }, (error) => {
+                    // Handle unsuccessful uploads
+                    console.log(error);
+                }, () => {
+                    // Do something once upload is complete
+                    console.log('success');
                 });
             }
+            // document.querySelector(".file-select).addEventListener('change', handleFileUploadChange");
+            $(".file-select").on('click', '*', handleFileUploadChange);
+            $(".file-submit").on('click', '*', handleFileUploadSubmit);
 
-            function saveData() {
-                // event.preventDefault();
-                // Grabbed values from text boxes
-                make = $("#make-input").val().trim();
-                model = $("#model-input").val().trim();
-                color = $("#color-input").val().trim();
-                age = $("#age-input").val().trim();
-                size = $("#size-input").val().trim();
-                license = $("#license-input").val().trim();
-                serial = $("#serial-input").val().trim();
-                image = '';
-                database.ref().on("value", function (snapshot) {
-                    snapshot.forEach(function (childSnapshot) {
-                        var childData = childSnapshot.val();
-                        var id = childData.id;
-                        console.log(childData.id);
-                    });
-                });
+            // document.querySelector(".file-submit).addEventListener('click', handleFileUploadSubmit");
+            let selectedFile;
 
-                // Code for handling the push
-                database.ref().push({
-                    make: make,
-                    model: model,
-                    color: color,
-                    age: age,
-                    size: size,
-                    license: license,
-                    serial: serial,
-                    status: status,
-                    image: image,
-                    dateAdded: firebase.database.ServerValue.TIMESTAMP
-
-                });
+            function handleFileUploadChange(e) {
+                selectedFile = e.target.files[0];
             }
-
-            function downloadUrl(url, callback) {
-                var request = window.ActiveXObject ?
-                    new ActiveXObject('Microsoft.XMLHTTP') :
-                    new XMLHttpRequest;
-
-                request.onreadystatechange = function () {
-                    if (request.readyState == 4) {
-                        request.onreadystatechange = doNothing;
-                        callback(request.responseText, request.status);
-                    }
-                };
-
-                request.open('GET', url, true);
-                request.send(null);
-            }
-
-
-
-
-            // function loadPointsFromFirebase(map) { // pass the initialised map to the function
-            //     var marker = {};
-            //     // var db = firebase.database();
-            //     database.ref('clicks').ones('value', points => {
-            //         points.forEach(point => {
-            //             marker = new google.maps.Marker({
-            //                 map: map,
-            //                 position: {
-            //                     lat: point.val().lat,
-            //                     lng: point.val().lng
-            //                 }
-            //             })
-            //             marker.setMap(map) // Set market on the map 
-            //         })
-            //     })
-
-
-
-            // }
-
-            function doNothing() {}
-
-
-            // Initialize Firebase
-            var config = {
-                apiKey: "AIzaSyBdz2Q4if_BfZQP0xRvFsqpyfzUE7TcjKQ",
-                authDomain: "bike-finder-project.firebaseapp.com",
-                databaseURL: "https://bike-finder-project.firebaseio.com",
-                projectId: "bike-finder-project",
-                storageBucket: "bike-finder-project.appspot.com",
-                messagingSenderId: "630877659629"
-            };
-            firebase.initializeApp(config);
-
-            // Create a variable to reference the database.
-            var database = firebase.database();
-            //Listen for new added users
-            database.ref().on("child_added", function (snapshot) {
-                var snapValue = snapshot.val();
-                var seconds = snapValue.dateAdded;
-                var d = new Date(0);
-                d.setUTCSeconds(seconds);
-                console.log(d);
-                //                 $("#data-area").append(
-                //                     `
-                // <div class="lost-bike">
-                // <p>${snapValue.make}</p>
-                // <p>${snapValue.model}</p>
-                // <p>${snapValue.color}</p>
-                // <p>${snapValue.age}</p>
-                // <p>${snapValue.size}</p>
-                // <p>${snapValue.license}</p>
-                // <p>${snapValue.serial}</p>
-                // <hr />
-                // </div>
-                // `
-                // )
-            });
-            // Initial Values
-            var make = "";
-            var model = "";
-            var color = "";
-            var age = "";
-            var size = "";
-            var license = "";
-            var serial = "";
-            var status = "";
-
-
-            // Capture Button Click
-            $("#add-user").on("click", function (event) {
-                // event.preventDefault();
-                // Grabbed values from text boxes
-                make = $("#make-input").val().trim();
-                model = $("#model-input").val().trim();
-                color = $("#color-input").val().trim();
-                age = $("#age-input").val().trim();
-                size = $("#size-input").val().trim();
-                license = $("#license-input").val().trim();
-                serial = $("#serial-input").val().trim();
-                status = $("#status-input").val().trim();
-                // map.addListener('click', function (e) {
-                //     data.lat = e.latLng.lat();
-                //     data.lng = e.latLng.lng();
-                //     addToFirebase(data);
-                //     console.log(e.latLng.lat());
-                // });
-
-
-                // Code for handling the push
-                database.ref().push({
-
-                    make: make,
-                    model: model,
-                    color: color,
-                    age: age,
-                    size: size,
-                    license: license,
-                    serial: serial,
-                    status: status,
-                    dateAdded: firebase.database.ServerValue.TIMESTAMP,
-
-                });
-
-            });
         </script>
         <!-- function initMap() { map = new google.maps.Map(document.getElementById('map'), { center: { lat: 39.680429, lng: -104.965109
     }, zoom: 13 }); } -->

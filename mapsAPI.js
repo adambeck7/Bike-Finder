@@ -22,6 +22,7 @@
  var lng = '';
  var value = '';
  var latlng = '';
+ var childData = '';
 
  // var data = {
  //     sender: null,
@@ -37,9 +38,9 @@
          lat = childData.latitude;
          lng = childData.longitude;
          latlng = '{lat: ' + lat + ', lng: ' + lng + '}';
-         console.log(latlng);
-         console.log(parseFloat(lat));
-         console.log(parseFloat(lng));
+         //  console.log(latlng);
+         //  console.log(parseFloat(lat));
+         //  console.log(parseFloat(lng));
      });
  });
 
@@ -76,6 +77,33 @@
 
      });
 
+     var query = firebase.database().ref().orderByKey();
+     query.once("value")
+         .then(function (snapshot) {
+             snapshot.forEach(function (childSnapshot) {
+                 // key will be "ada" the first time and "alan" the second time
+                 var key = childSnapshot.key;
+                 // childData will be the actual contents of the child
+                 childData = childSnapshot.val();
+                 lat = childData.latitude
+                 lng = childData.longitude;
+                 //  console.log("key", key);
+                 console.log("latlng = ", lat + ',' + lng);
+                 marker = new google.maps.Marker({
+                     position: {
+                         lat: (parseFloat(lat)),
+                         lng: (parseFloat(lng))
+                     },
+                     map: map,
+                     title: 'Hello World!'
+
+                 });
+
+             });
+
+         });
+
+
      // Create the DIV to hold the control and call the makeInfoBox() constructor
      // passing in this DIV.
      infowindow = new google.maps.InfoWindow({
@@ -95,8 +123,8 @@
 
          google.maps.event.addListener(marker, 'click', function () {
              infowindow.open(map, marker);
-             console.log(map);
-             console.log(marker);
+             //  console.log(map);
+             //  console.log(marker);
          });
      });
      google.maps.event.addListener(map, "click", function (e) {
@@ -191,7 +219,7 @@
      var seconds = snapValue.dateAdded;
      var d = new Date(0);
      d.setUTCSeconds(seconds);
-     console.log(d);
+     //  console.log(d);
      //                 $("#data-area").append(
      //                     `
      // <div class="lost-bike">
@@ -243,9 +271,9 @@
      // });
 
      geoFire.set('testTest', [39.680429, -104.965109]).then(function () {
-         console.log('Location added')
+         //  console.log('Location added')
      }).catch(function (error) {
-         console.log(error);
+         //  console.log(error);
      });
      // Code for handling the push
      database.ref().push({

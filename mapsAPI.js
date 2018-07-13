@@ -22,6 +22,7 @@
  var lng = '';
  var value = '';
  var latlng = '';
+ var baseImage;
  //  var childData = '';
  var contentWindow = '';
  var currentInfoWindow = null;
@@ -86,6 +87,7 @@
                  console.log("Child Data: ", childData)
                  lat = childData.latitude;
                  lng = childData.longitude;
+                 //  showImage = childData.image;
                  //  console.log("key", key);
                  console.log("latlng = ", lat + ',' + lng);
                  marker = new google.maps.Marker({
@@ -97,7 +99,7 @@
                  });
                  google.maps.event.addListener(marker, 'click', function () {
                      var infoWindowDB = new google.maps.InfoWindow;
-                     infoWindowDB.setContent('<div> Make: ' + childData.make + '<br>' + '</div><div> Model: ' + childData.model + '<br>' + '</div><div> Color: ' + childData.color + '<br>' + '</div><div> Year: ' + childData.age + '<br>' + '</div><div> Size: ' + childData.size + '<br></div>' + '</div><div> License: ' + childData.license + '<br>' + '</div><div> Serial: ' + childData.serial + '<br>' + '<a href="https://imgur.com/ABaKqwJ"><img src="https://i.imgur.com/ABaKqwJ.jpg" title="source: imgur.com" style="height:200px"/></a>');
+                     infoWindowDB.setContent('<div> Make: ' + childData.make + '<br>' + '</div><div> Model: ' + childData.model + '<br>' + '</div><div> Color: ' + childData.color + '<br>' + '</div><div> Year: ' + childData.age + '<br>' + '</div><div> Size: ' + childData.size + '<br></div>' + '</div><div> License: ' + childData.license + '<br>' + '</div><div> Serial: ' + childData.serial + '<br>' + '<img src="' + childData.image + '" style="height:200px"/>');
                      if (currentInfoWindow != null) {
                          currentInfoWindow.close();
                      }
@@ -151,6 +153,16 @@
      });
  }
 
+ function encodeImageFileAsURL(element) {
+     var file = element.files[0];
+     var reader = new FileReader();
+     reader.onloadend = function () {
+         baseImage = reader.result
+         console.log('RESULT', reader.result)
+     }
+     reader.readAsDataURL(file);
+ }
+
 
  function saveData() {
      // event.preventDefault();
@@ -162,7 +174,9 @@
      size = $("#size-input").val().trim();
      license = $("#license-input").val().trim();
      serial = $("#serial-input").val().trim();
-     image = '';
+     image = baseImage;
+
+
      // database.ref().on("value", function (snapshot) {
      //     snapshot.forEach(function (childSnapshot) {
      //         var childData = childSnapshot.val();

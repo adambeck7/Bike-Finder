@@ -9,8 +9,8 @@
  };
  firebase.initializeApp(config);
 
- var storageService = firebase.storage();
- var storageRef = storageService.ref();
+ //  var storageService = firebase.storage();
+ //  var storageRef = storageService.ref();
 
  // Create a variable to reference the database.
  var database = firebase.database();
@@ -22,8 +22,9 @@
  var lng = '';
  var value = '';
  var latlng = '';
- var childData = '';
-
+ //  var childData = '';
+ var contentWindow = '';
+ var currentInfoWindow = null;
  // var data = {
  //     sender: null,
  //     timestamp: null,
@@ -81,11 +82,9 @@
      query.once("value")
          .then(function (snapshot) {
              snapshot.forEach(function (childSnapshot) {
-                 // key will be "ada" the first time and "alan" the second time
-                 var key = childSnapshot.key;
-                 // childData will be the actual contents of the child
-                 childData = childSnapshot.val();
-                 lat = childData.latitude
+                 var childData = childSnapshot.val();
+                 console.log("Child Data: ", childData)
+                 lat = childData.latitude;
                  lng = childData.longitude;
                  //  console.log("key", key);
                  console.log("latlng = ", lat + ',' + lng);
@@ -95,9 +94,20 @@
                          lng: (parseFloat(lng))
                      },
                      map: map,
-                     title: 'Hello World!'
+                 });
+                 google.maps.event.addListener(marker, 'click', function () {
+                     var infoWindowDB = new google.maps.InfoWindow;
+                     infoWindowDB.setContent('<div> Make: ' + childData.make + '<br>' + '</div><div> Model: ' + childData.model + '<br>' + '</div><div> Color: ' + childData.color + '<br>' + '</div><div> Year: ' + childData.age + '<br>' + '</div><div> Size: ' + childData.size + '<br></div>' + '</div><div> License: ' + childData.license + '<br>' + '</div><div> Serial: ' + childData.serial + '<br>' + '<a href="https://imgur.com/ABaKqwJ"><img src="https://i.imgur.com/ABaKqwJ.jpg" title="source: imgur.com" style="height:200px"/></a>');
+                     if (currentInfoWindow != null) {
+                         currentInfoWindow.close();
+                     }
+                     //  infoWindowDB.open(map, marker);
+                     currentInfoWindow = infoWindowDB;
+                     infoWindowDB.open(map, this);
+
 
                  });
+
 
              });
 
@@ -106,6 +116,11 @@
 
      // Create the DIV to hold the control and call the makeInfoBox() constructor
      // passing in this DIV.
+     //  google.maps.event.addListener(marker, 'click', function () {
+     //      infowindow.setContent('<div><strong>' + lat + '</strong><br>');
+     //      infowindow.open(map, this);
+     //  });
+
      infowindow = new google.maps.InfoWindow({
          content: document.getElementById('form')
      });

@@ -178,6 +178,8 @@
  function saveData() {
      // event.preventDefault();
      // Grabbed values from text boxes
+
+     status = $('input[name=status-input]:checked').val();
      make = $("#make-input").val().trim();
      model = $("#model-input").val().trim();
      color = $("#color-input").val().trim();
@@ -186,6 +188,7 @@
      license = $("#license-input").val().trim();
      serial = $("#serial-input").val().trim();
      image = baseImage;
+     console.log('status-val = ', status)
 
 
      // database.ref().on("value", function (snapshot) {
@@ -286,51 +289,48 @@
  var status = "";
 
 
- var usersRef = firebase.database().ref('users').push();
 
- // Create a new GeoFire key under users Firebase location
- var geoFire = new GeoFire(database.ref().child('geofire'));
+ //  var usersRef = firebase.database().ref('users').push();
 
- // Capture Button Click
- $("#add-user").on("click", function (event) {
-     // event.preventDefault();
-     // Grabbed values from text boxes
-     make = $("#make-input").val().trim();
-     model = $("#model-input").val().trim();
-     color = $("#color-input").val().trim();
-     age = $("#age-input").val().trim();
-     size = $("#size-input").val().trim();
-     license = $("#license-input").val().trim();
-     serial = $("#serial-input").val().trim();
-     status = $("#status-input").val().trim();
-     // map.addListener('click', function (e) {
-     //     data.lat = e.latLng.lat();
-     //     data.lng = e.latLng.lng();
-     //     addToFirebase(data);
-     //     console.log(e.latLng.lat());
-     // });
+ //  // Create a new GeoFire key under users Firebase location
+ //  var geoFire = new GeoFire(database.ref().child('geofire'));
 
-     geoFire.set('testTest', [39.680429, -104.965109]).then(function () {
-         //  console.log('Location added')
-     }).catch(function (error) {
-         //  console.log(error);
-     });
-     // Code for handling the push
-     database.ref().push({
+ //  // Capture Button Click
+ //  $("#add-user").on("click", function (event) {
+ //      // event.preventDefault();
+ //      // Grabbed values from text boxes
+ //      make = $("#make-input").val().trim();
+ //      model = $("#model-input").val().trim();
+ //      color = $("#color-input").val().trim();
+ //      age = $("#age-input").val().trim();
+ //      size = $("#size-input").val().trim();
+ //      license = $("#license-input").val().trim();
+ //      serial = $("#serial-input").val().trim();
+ //      status = $("#status-input").val().trim();
+ //      console.log('status check = ', status);
+ //      // map.addListener('click', function (e) {
+ //      //     data.lat = e.latLng.lat();
+ //      //     data.lng = e.latLng.lng();
+ //      //     addToFirebase(data);
+ //      //     console.log(e.latLng.lat());
+ //      // });
 
-         make: make,
-         model: model,
-         color: color,
-         age: age,
-         size: size,
-         license: license,
-         serial: serial,
-         status: status,
-         dateAdded: firebase.database.ServerValue.TIMESTAMP,
+ //      // Code for handling the push
+ //      database.ref().push({
 
-     });
+ //          make: make,
+ //          model: model,
+ //          color: color,
+ //          age: age,
+ //          size: size,
+ //          license: license,
+ //          serial: serial,
+ //          status: status,
+ //          dateAdded: firebase.database.ServerValue.TIMESTAMP,
 
- });
+ //      });
+
+ //  });
 
  function order() {
      var ref = firebase.database().ref();

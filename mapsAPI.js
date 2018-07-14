@@ -9,6 +9,7 @@
  };
  firebase.initializeApp(config);
 
+
  //  var storageService = firebase.storage();
  //  var storageRef = storageService.ref();
 
@@ -122,7 +123,16 @@
      //      infowindow.setContent('<div><strong>' + lat + '</strong><br>');
      //      infowindow.open(map, this);
      //  });
-
+     function placeMarker(location) {
+         if (marker) {
+             marker.setPosition(location);
+         } else {
+             marker = new google.maps.Marker({
+                 position: location,
+                 map: map
+             });
+         }
+     }
      infowindow = new google.maps.InfoWindow({
          content: document.getElementById('form')
      });
@@ -136,7 +146,7 @@
              position: event.latLng,
              map: map
          });
-
+         placeMarker(event.latLng);
 
          google.maps.event.addListener(marker, 'click', function () {
              infowindow.open(map, marker);
@@ -150,6 +160,7 @@
          latLng = e.latLng;
          lat = e.latLng.lat();
          lng = e.latLng.lng();
+
      });
  }
 
@@ -330,3 +341,21 @@
      });
  }
  order();
+
+ var messaging = firebase.messaging();
+ messaging.requestPermission()
+     .then(function () {
+         console.log('have permission');
+         return messaging.getToken();
+         console.log(messaging.getToken());
+     })
+     .then(function (token) {
+         console.log(token);
+     })
+     .catch(function (err) {
+         console.log('error occured');
+     })
+
+ messaging.onMessage(function (payload) {
+     console.log('onMessage: ', payload)
+ })

@@ -122,10 +122,11 @@
                     <input type='text' id='serial-input' /> </td>
             </tr>
             <tr>
-                <td>Image:</td>
+                <td>Image: (required)</td>
                 <td>
                     <div id='filesubmit'>
-                        <input id="image-input" onchange="encodeImageFileAsURL(this)" type="file" class='file-select' name="pic" accept="image/*">
+                        <input id="image-input" onchange="encodeImageFileAsURL(this)" type="file" class='file-select' name="pic" accept="image/*"
+                            required>
                         <!-- <input type="submit"> -->
                         </form>
                 </td>
@@ -139,21 +140,7 @@
         </table>
         </div>
         <!-- <div id="message">Location saved</div> -->
-        <script>
-            // var fileButton = document.getElementById('image-input');
-            // fileButton.addEventListener('change', function (e) {
-            //     //get file
-            //     var file = e.target.files[0];
-            //     //create storage ref
-            //     var storageRef = firebase.storage().ref(file.name);
-            //     //upload file
-            //     storageRef.put(file);
 
-            // });
-        </script>
-        <!-- function initMap() { map = new google.maps.Map(document.getElementById('map'), { center: { lat: 39.680429, lng: -104.965109
-    }, zoom: 13 }); } -->
-        </script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4d7jTSocgsZ7WSgh2LHVj_D3LPbQ3QVw&callback=initMap" async
             defer></script>
 

@@ -11,13 +11,12 @@ var config = {
 };
 firebase.initializeApp(config);
 
-// const messaging = firebase.messaging();
-navigator.serviceWorker.register('https://adambeck7.github.io/Bike-Finder/')
-    .then(messaging.setBackgroundMessageHandler(function (payload) {
-        const title = 'hello world';
-        const options = {
-            body: payload.data.status
-        }
+const messaging = firebase.messaging();
+messaging.setBackgroundMessageHandler(function (payload) {
+    const title = 'hello world';
+    const options = {
+        body: payload.data.status
+    }
 
-        return self.registration.showNotification(title, options)
-    }))
+    return self.registration.showNotification(title, options)
+})

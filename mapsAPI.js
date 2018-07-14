@@ -200,7 +200,7 @@
          token: token,
          dateAdded: firebase.database.ServerValue.TIMESTAMP
      });
-     console.log('success!')
+     $('#form')
  }
 
  function downloadUrl(url, callback) {

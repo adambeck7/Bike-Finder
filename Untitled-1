@@ -8,7 +8,6 @@
      messagingSenderId: "630877659629"
  };
  firebase.initializeApp(config);
- var query = firebase.database().ref().orderByKey();
 
  // Create a variable to reference the database.
  var database = firebase.database();
@@ -41,51 +40,12 @@
          latlng = '{lat: ' + lat + ', lng: ' + lng + '}';
      });
  });
- var query = firebase.database().ref().orderByKey();
-
- function fcmAjax(color) {
-     query.once("value")
-         .then(function (snapshot) {
-             snapshot.forEach(function (childSnapshot) {
-                 var childData = childSnapshot.val();
-                 //  console.log("Child Data: ", childData)
-                 console.log(childData.color);
-                 //change marker based on status(lost or found)
-                 if (childData.status == 0 && childData.color == color) {
-                     //  if (childData.color == 'Black') {
-                     console.log('ajax test')
-                     $.ajax({
-                         type: 'POST',
-                         url: "https://fcm.googleapis.com/fcm/send",
-                         headers: {
-                             Authorization: 'key=' + 'AAAAkuM9Ie0:APA91bH0RBfuSw37xGgfNw0NDdz4dwhjxb2S5llgl1TfkzH5vS56LRZe4ldRwMwNr34N46wo2iZvhDZsw4GPVTyx_2FZvCVIpDsyf5nEUyh516CHIie2LNaTsAuIfQ4T2-Edtje9WEhI4SnTywjDlR82Rnq4muMEKQ'
-                         },
-                         contentType: 'application/json',
-                         dataType: 'json',
-                         data: JSON.stringify({
-                             "to": childData.token,
-                             "data": {
-                                 "status": "There's a bike matching your description in our database! Click on the blue markers to see which one."
-                             }
-                         }),
-                         success: function (response) {
-                             console.log(response);
-                         },
-                         error: function (xhr, status, error) {
-                             console.log(xhr.error);
-                         }
-                     });
-                 }
-             });
-
-         });
- }
 
  function initMap() {
 
      var denver = {
-         lat: 39.949835725662496,
-         lng: -104.96390737036131,
+         lat: 39.680429,
+         lng: -104.965109,
          styles: [{
              featureType: 'poi',
              stylers: [{
@@ -102,7 +62,7 @@
      };
      map = new google.maps.Map(document.getElementById('map'), {
          center: denver,
-         zoom: 10
+         zoom: 13
      });
      var marker = new google.maps.Marker({
          position: {
@@ -114,7 +74,7 @@
 
      });
 
-     //  var query = firebase.database().ref().orderByKey();
+     var query = firebase.database().ref().orderByKey();
      query.once("value")
          .then(function (snapshot) {
              snapshot.forEach(function (childSnapshot) {
@@ -122,30 +82,16 @@
                  //  console.log("Child Data: ", childData)
                  lat = childData.latitude;
                  lng = childData.longitude;
-                 console.log(childData.status);
-                 //change marker based on status(lost or found)
-                 if (childData.status == 0) {
-                     marker = new google.maps.Marker({
-
-                         position: {
-                             lat: (parseFloat(lat)),
-                             lng: (parseFloat(lng))
-                         },
-                         map: map,
-                     });
-                 } else {
-                     var pinColor = "007bff";
-                     var pinImage = new google.maps.MarkerImage("https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor);
-                     marker = new google.maps.Marker({
-                         position: {
-                             lat: (parseFloat(lat)),
-                             lng: (parseFloat(lng))
-                         },
-                         map: map,
-                         icon: pinImage,
-                     });
-                 }
-                 //open infowindow with database values on click
+                 //  showImage = childData.image;
+                 //  console.log("key", key);
+                 //  console.log("latlng = ", lat + ',' + lng);
+                 marker = new google.maps.Marker({
+                     position: {
+                         lat: (parseFloat(lat)),
+                         lng: (parseFloat(lng))
+                     },
+                     map: map,
+                 });
                  google.maps.event.addListener(marker, 'click', function () {
                      var infoWindowDB = new google.maps.InfoWindow;
                      infoWindowDB.setContent('<div> Make: ' + childData.make + '<br>' + '</div><div> Model: ' + childData.model + '<br>' + '</div><div> Color: ' + childData.color + '<br>' + '</div><div> Year: ' + childData.age + '<br>' + '</div><div> Size: ' + childData.size + '<br></div>' + '</div><div> License: ' + childData.license + '<br>' + '</div><div> Serial: ' + childData.serial + '<br>' + '<img src="' + childData.image + '" style="height:200px"/>');
@@ -162,6 +108,13 @@
 
          });
 
+
+     // Create the DIV to hold the control and call the makeInfoBox() constructor
+     // passing in this DIV.
+     //  google.maps.event.addListener(marker, 'click', function () {
+     //      infowindow.setContent('<div><strong>' + lat + '</strong><br>');
+     //      infowindow.open(map, this);
+     //  });
      function placeMarker(location) {
          if (marker) {
              marker.setPosition(location);
@@ -202,7 +155,7 @@
 
      });
  }
- //encode image as base64
+
  function encodeImageFileAsURL(element) {
      var file = element.files[0];
      var reader = new FileReader();
@@ -213,7 +166,42 @@
      reader.readAsDataURL(file);
  }
 
+ // Capture Button Click
+ $("#add-user").on("click", function (event) {
+     // event.preventDefault();
+     // Grabbed values from text boxes
+     make = $("#make-input").val().trim();
+     model = $("#model-input").val().trim();
+     color = $("#color-input").val().trim();
+     age = $("#age-input").val().trim();
+     size = $("#size-input").val().trim();
+     license = $("#license-input").val().trim();
+     serial = $("#serial-input").val().trim();
+     status = $("#status-input").val().trim();
+     console.log('status check = ', status);
+     // map.addListener('click', function (e) {
+     //     data.lat = e.latLng.lat();
+     //     data.lng = e.latLng.lng();
+     //     addToFirebase(data);
+     //     console.log(e.latLng.lat());
+     // });
 
+     // Code for handling the push
+     database.ref().push({
+
+         make: make,
+         model: model,
+         color: color,
+         age: age,
+         size: size,
+         license: license,
+         serial: serial,
+         status: status,
+         dateAdded: firebase.database.ServerValue.TIMESTAMP,
+
+     });
+
+ });
 
  function saveData() {
      // event.preventDefault();
@@ -246,9 +234,8 @@
          longitude: lng,
          token: token,
          dateAdded: firebase.database.ServerValue.TIMESTAMP
+
      });
-     fcmAjax(color);
-     infowindow.close();
  }
 
  function downloadUrl(url, callback) {
@@ -308,7 +295,7 @@
          console.log(newToken);
      })
      .catch(function (err) {
-         console.log(err);
+         console.log('error occured');
      })
 
  messaging.onMessage(function (payload) {

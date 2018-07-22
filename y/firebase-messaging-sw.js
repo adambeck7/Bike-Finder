@@ -12,10 +12,10 @@ var config = {
 firebase.initializeApp(config);
 
 const messaging = firebase.messaging();
-messaging.setBackgroundMessageHandler(function (payload) {
+messaging.setBackgroundMessageHandler(function (response) {
     const title = 'Bike Found';
     const options = {
-        body: payload.data.status
+        body: response.data.status
     }
 
     return self.registration.showNotification(title, options)

@@ -51,8 +51,8 @@
                  //  console.log("Child Data: ", childData)
                  console.log(childData.color);
                  //change marker based on status(lost or found)
-                 if (childData.status == 0 && childData.color == color) {
-                     //  if (childData.color == 'Black') {
+                 //  if (childData.status == 0 && childData.color == color) {
+                 if (childData.color == 'Black') {
                      console.log('ajax test')
                      $.ajax({
                          type: 'POST',
